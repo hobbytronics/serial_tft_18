@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.01    21 May 2013   Removed casts to int16 - not needed as slows down box drawing
  1.00    17 Apr 2013   Initial Release 
 */
 
@@ -324,31 +325,31 @@ void tft_pix_goto()
 void tft_draw_line()
 {
   // Draw Line, from X1,Y1 to X2,Y2
-  tft.drawLine((int16_t)inputString[1], (int16_t)inputString[2], (int16_t)inputString[3], (int16_t)inputString[4], foreground);
+  tft.drawLine(inputString[1], inputString[2], inputString[3], inputString[4], foreground);
 } 
 
 void tft_draw_box()
 {
   // Draw Box, from X1,Y1 to X2,Y2
-  tft.drawRect((int16_t)inputString[1], (int16_t)inputString[2], (int16_t)inputString[3] - (int16_t)inputString[1], (int16_t)inputString[4] - (int16_t)inputString[2], foreground);
+  tft.drawRect(inputString[1], inputString[2], inputString[3] - inputString[1], inputString[4] - inputString[2], foreground);
 }
 
 void tft_fill_box()
 {
   // Draw Box, from X1,Y1 to X2,Y2 and fill it with colour
-  tft.fillRect((int16_t)inputString[1], (int16_t)inputString[2], (int16_t)inputString[3] - (int16_t)inputString[1], (int16_t)inputString[4] - (int16_t)inputString[2], foreground); 
+  tft.fillRect(inputString[1], inputString[2], inputString[3] - inputString[1], inputString[4] - inputString[2], foreground); 
 }
 
 void tft_draw_circle()
 {
   // Draw circle at x, y, radius
-  tft.drawCircle((int16_t)inputString[1], (int16_t)inputString[2], (int16_t)inputString[3], foreground);
+  tft.drawCircle(inputString[1], inputString[2], inputString[3], foreground);
 }
 
 void tft_fill_circle()
 {
   // Draw circle at x, y, radius and fill
-  tft.fillCircle((int16_t)inputString[1], (int16_t)inputString[2], (int16_t)inputString[3], foreground);
+  tft.fillCircle(inputString[1], inputString[2], inputString[3], foreground);
 }
 
 void tft_rotation()
@@ -381,7 +382,7 @@ void tft_bitmap(void)
 
   if(sd_card==1)
   {
-     bmpDraw(bmp_filename, (int16_t)inputString[1], (int16_t)inputString[2]);
+     bmpDraw(bmp_filename, inputString[1], inputString[2]);
   }
 }
 
