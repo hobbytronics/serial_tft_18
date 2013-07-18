@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.02    18 Jul 2013   Backlight brightness control fixed (PWM not available on pin 7)
  1.01    21 May 2013   Removed casts to int16 - not needed as slows down box drawing
  1.00    17 Apr 2013   Initial Release 
 */
@@ -35,10 +36,12 @@ unsigned char screen_width=160;
 unsigned char mode=MODE_TEXT;
 unsigned int foreground=ST7735_WHITE;
 unsigned int background=ST7735_BLACK;
+unsigned char bl_brightness=100;
 
 unsigned char inputString[40];         // a string to hold incoming data
 int inputStringIndex = 0;
-
+unsigned long currentTime;
+unsigned long blTime;
   
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -49,14 +52,15 @@ void setup(void) {
   pinMode(SD_CS, OUTPUT);
   
   // If your TFT's plastic wrap has a Red Tab, use the following:
-  tft.initR(INITR_REDTAB);   // initialize a ST7735R chip, red tab
+  //tft.initR(INITR_REDTAB);   // initialize a ST7735R chip, red tab
   // If your TFT's plastic wrap has a Green Tab, use the following:
   //tft.initR(INITR_GREENTAB); // initialize a ST7735R chip, green tab
   // If your TFT's plastic wrap has a Black Tab, use the following:
-  //tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black tab  
+  tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black tab  
   
   tft.setRotation(3);               // Set to landscape mode
   //analogWrite(lcdBacklight, 255);   // Turn Backlight on full
+  pinMode(lcdBacklight, OUTPUT);
   digitalWrite(lcdBacklight, HIGH);
   
   // Check for SD Card
@@ -69,15 +73,25 @@ void setup(void) {
     SPI.setClockDivider(SPI_CLOCK_DIV4); // 16/4 MHz
   }  
   else sd_card=1;
-  
+  blTime = micros();  
   tftInit();
   
   Serial.begin(9600);
+
 }
 
 void loop() {
+
+  currentTime = micros();
+  if(currentTime >= (blTime + (unsigned long)bl_brightness)){ 
+     // AnalogWrite not available on pin 7 (oops), so we modulate LCD backlight manually
+     digitalWrite(lcdBacklight, LOW);
+     if(currentTime >= (blTime + 100)){
+        digitalWrite(lcdBacklight, HIGH);
+        blTime = micros();
+     }  
+  }  
   
-  // Nothing
 }
 
 /*
@@ -360,8 +374,9 @@ void tft_rotation()
 void tft_backlight()
 {
   // Set backlight
-  if(inputString[1] >= 100) digitalWrite(lcdBacklight, HIGH); // Turn Backlight on full
-  else analogWrite(lcdBacklight, inputString[1]*2.5 );   
+  bl_brightness = inputString[1];
+  if(inputString[1] >= 100) bl_brightness = 100;
+ 
 } 
 
 void tft_bitmap(void)
