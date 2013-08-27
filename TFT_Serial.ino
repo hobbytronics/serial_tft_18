@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.03    27 Aug 2013   Modified Backlight control to use interrupts to stop flicker
  1.02    18 Jul 2013   Backlight brightness control fixed (PWM not available on pin 7)
  1.01    21 May 2013   Removed casts to int16 - not needed as slows down box drawing
  1.00    17 Apr 2013   Initial Release 
@@ -42,7 +43,9 @@ unsigned char inputString[40];         // a string to hold incoming data
 int inputStringIndex = 0;
 unsigned long currentTime;
 unsigned long blTime;
-  
+
+int timer1_counter;
+
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 void setup(void) {
@@ -78,20 +81,36 @@ void setup(void) {
   
   Serial.begin(9600);
 
+  // initialize timer1 
+  noInterrupts();           // disable all interrupts
+  TCCR1A = 0;
+  TCCR1B = 0;
+
+  // Set timer1_counter to the correct value for our interrupt interval
+  timer1_counter = 65474;   // 3200Hz
+  
+  TCNT1 = timer1_counter;   // preload timer
+  TCCR1B |= (1 << CS11);    // 8 prescaler 
+  TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
+  interrupts();             // enable all interrupts
 }
 
-void loop() {
-
+ISR(TIMER1_OVF_vect)        // interrupt service routine - used for backlight
+{
+  // AnalogWrite not available on pin 7 (oops), so we modulate LCD backlight manually at 32Hz
+  TCNT1 = timer1_counter;   // preload timer
   currentTime = micros();
-  if(currentTime >= (blTime + (unsigned long)bl_brightness)){ 
-     // AnalogWrite not available on pin 7 (oops), so we modulate LCD backlight manually
+  if(currentTime >= (blTime + ((unsigned long)bl_brightness)*32)){ 
      digitalWrite(lcdBacklight, LOW);
-     if(currentTime >= (blTime + 100)){
+     if(currentTime >= (blTime + 3200)){
         digitalWrite(lcdBacklight, HIGH);
         blTime = micros();
      }  
-  }  
-  
+  } 
+}
+
+void loop() {
+ 
 }
 
 /*
