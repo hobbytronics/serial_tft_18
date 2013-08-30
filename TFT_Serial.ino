@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.04    30 Aug 2013   Fixed pixel position and text wrap for Portrait modes
  1.03    27 Aug 2013   Modified Backlight control to use interrupts to stop flicker
  1.02    18 Jul 2013   Backlight brightness control fixed (PWM not available on pin 7)
  1.01    21 May 2013   Removed casts to int16 - not needed as slows down box drawing
@@ -28,13 +29,15 @@
 #define MODE_TEXT    0
 #define COMMAND_START 0x1B
 #define COMMAND_END 0xFF
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 128
 
 unsigned char sd_card=0;       // SD Card inserted?
 unsigned char x_pos=0;
 unsigned char y_pos=0;
 unsigned char text_size=2;
-unsigned char screen_width=160;
 unsigned char mode=MODE_TEXT;
+unsigned char rotation=3;              // default Landscape
 unsigned int foreground=ST7735_WHITE;
 unsigned int background=ST7735_BLACK;
 unsigned char bl_brightness=100;
@@ -61,7 +64,7 @@ void setup(void) {
   // If your TFT's plastic wrap has a Black Tab, use the following:
   tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black tab  
   
-  tft.setRotation(3);               // Set to landscape mode
+  tft.setRotation(rotation);          // Set to landscape mode
   //analogWrite(lcdBacklight, 255);   // Turn Backlight on full
   pinMode(lcdBacklight, OUTPUT);
   digitalWrite(lcdBacklight, HIGH);
@@ -170,7 +173,7 @@ void serialEvent() {
             tft_set_bg_color();   // Set Background colour
             break;     
           case 3: 
-            tft_rotation();       // Draw filled circle
+            tft_rotation();       // Set screen rotation
             break;              
           case 4: 
             tft_fontsize();       // Set fontsize
@@ -219,7 +222,8 @@ void serialEvent() {
       }      
     }  
      
-    if(x_pos>=(screen_width-(text_size*6)))
+    if((((rotation==1) || (rotation==3)) & (x_pos>=(SCREEN_WIDTH-(text_size*6)))) ||
+       (((rotation==0) || (rotation==2)) & (x_pos>=(SCREEN_HEIGHT-(text_size*6)))) )
     {
       //can't fit next char on screen - wrap
       x_pos=0;
@@ -347,7 +351,9 @@ void tft_text_goto()
 void tft_pix_goto()
 {
   // Goto pixel position
-  if((inputString[1]<160) & (inputString[2]<127))
+
+  if((((rotation==1) || (rotation==3)) & ((inputString[1]<SCREEN_WIDTH) & (inputString[2]<SCREEN_HEIGHT))) ||
+     (((rotation==0) || (rotation==2)) & ((inputString[1]<SCREEN_HEIGHT) & (inputString[2]<SCREEN_WIDTH))))
   {
     x_pos=inputString[1];
     y_pos=inputString[2];  
@@ -387,7 +393,11 @@ void tft_fill_circle()
 
 void tft_rotation()
 {
-    tft.setRotation((int16_t)inputString[1]); 
+    if(inputString[1]<4)
+    {
+      rotation=inputString[1];
+      tft.setRotation((int16_t)inputString[1]);
+    }  
 }
 
 void tft_backlight()
