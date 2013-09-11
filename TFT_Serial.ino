@@ -464,7 +464,8 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
   if ((bmpFile = SD.open(filename)) == NULL) {
     tft.print("File not found (");
     tft.print(filename);
-    tft.println(")");   
+    tft.println(")");  
+    interrupts();     
     return;
   }
   
@@ -480,7 +481,7 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
     if(read16(bmpFile) == 1) { // # planes -- must be '1'
       bmpDepth = read16(bmpFile); // bits per pixel
       if((bmpDepth == 24) && (read32(bmpFile) == 0)) { // 0 = uncompressed
-
+        interrupts(); 
         goodBmp = true; // Supported BMP format -- proceed!
         
         // BMP rows are padded (if needed) to 4-byte boundary
