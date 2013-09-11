@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.05    11 Sep 2013   Disabled interrupts (backlight) when reading BMP file
  1.04    30 Aug 2013   Fixed pixel position and text wrap for Portrait modes
  1.03    27 Aug 2013   Modified Backlight control to use interrupts to stop flicker
  1.02    18 Jul 2013   Backlight brightness control fixed (PWM not available on pin 7)
@@ -457,6 +458,8 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
 
   if((x >= tft.width()) || (y >= tft.height())) return;
 
+  noInterrupts();   // disable interrupts
+  
   // Open requested file on SD card
   if ((bmpFile = SD.open(filename)) == NULL) {
     tft.print("File not found (");
@@ -536,6 +539,8 @@ void bmpDraw(char *filename, uint8_t x, uint8_t y) {
 
   bmpFile.close();
   if(!goodBmp) tft.println("BMP error.");
+  
+  interrupts(); 
 }
 
 // These read 16- and 32-bit types from the SD card file.
