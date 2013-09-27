@@ -7,6 +7,7 @@
 
  Version History
  ---------------
+ 1.06    27 Sep 2013   Fixed pixel width of boxes 
  1.05    11 Sep 2013   Disabled interrupts (backlight) when reading BMP file
  1.04    30 Aug 2013   Fixed pixel position and text wrap for Portrait modes
  1.03    27 Aug 2013   Modified Backlight control to use interrupts to stop flicker
@@ -63,7 +64,7 @@ void setup(void) {
   // If your TFT's plastic wrap has a Green Tab, use the following:
   //tft.initR(INITR_GREENTAB); // initialize a ST7735R chip, green tab
   // If your TFT's plastic wrap has a Black Tab, use the following:
-  tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black tab  
+  tft.initR(INITR_BLACKTAB);   // initialize a ST7735R chip, black and blue tab  
   
   tft.setRotation(rotation);          // Set to landscape mode
   //analogWrite(lcdBacklight, 255);   // Turn Backlight on full
@@ -371,13 +372,13 @@ void tft_draw_line()
 void tft_draw_box()
 {
   // Draw Box, from X1,Y1 to X2,Y2
-  tft.drawRect(inputString[1], inputString[2], inputString[3] - inputString[1], inputString[4] - inputString[2], foreground);
+  tft.drawRect(inputString[1], inputString[2], inputString[3] - inputString[1] + 1, inputString[4] - inputString[2] + 1, foreground);
 }
 
 void tft_fill_box()
 {
   // Draw Box, from X1,Y1 to X2,Y2 and fill it with colour
-  tft.fillRect(inputString[1], inputString[2], inputString[3] - inputString[1], inputString[4] - inputString[2], foreground); 
+  tft.fillRect(inputString[1], inputString[2], inputString[3] - inputString[1] + 1, inputString[4] - inputString[2] + 1, foreground); 
 }
 
 void tft_draw_circle()
